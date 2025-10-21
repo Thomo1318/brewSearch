@@ -8,8 +8,10 @@
 .cache/
 *.cache
 
-# Archive directory (development history)
-archive/
+# Archive directory (old versions - not AI docs)
+archive/v*/
+archive/*-progress-bar/
+archive/progressBar-standalone
 
 # OS files
 .DS_Store
