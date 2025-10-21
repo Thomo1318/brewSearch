@@ -1,0 +1,63 @@
+#!/bin/bash
+###***brewsearch***###
+
+# Get script directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
+# Source libraries
+source "$PROJECT_ROOT/lib/progress.sh"
+source "$PROJECT_ROOT/lib/search.sh"
+source "$PROJECT_ROOT/lib/format.sh"
+
+# Load config if exists
+[ -f "$PROJECT_ROOT/config/defaults.conf" ] && source "$PROJECT_ROOT/config/defaults.conf"
+
+# Check if an argument is provided
+if [ -z "$1" ]; then
+  echo "Usage: bs [ARGUMENT]"
+  exit 1
+fi
+
+echo "Searching for: $1"
+
+# Show initial progress
+show_progress 0 4 "Starting search..."
+sleep 0.5
+
+# Get formulae matching '[ARGUMENT]'
+show_progress 1 4 "Searching formulae..."
+FORMULAE=$(search_formulae "$1")
+
+# Get casks matching '[ARGUMENT]'
+show_progress 2 4 "Searching casks..."
+CASKS=$(search_casks "$1")
+
+# Gathering info
+show_progress 3 4 "Gathering package info..."
+sleep 0.5
+
+show_progress 4 4 "Complete!"
+clear_progress
+
+echo "Results for: $1"
+
+print_section_header "Formulae"
+if [ -n "$FORMULAE" ]; then
+  echo "$FORMULAE" | while IFS= read -r formula; do
+    brew info --formula "$formula"
+    print_separator
+  done
+else
+  echo "No formulae found."
+fi
+
+print_section_header "Cask"
+if [ -n "$CASKS" ]; then
+  echo "$CASKS" | while IFS= read -r cask; do
+    brew info --cask "$cask"
+    print_separator
+  done
+else
+  echo "No casks found."
+fi
