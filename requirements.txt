@@ -1,0 +1,20 @@
+# BrewSearch Requirements
+# This file documents the system requirements for brewsearch
+
+# Core Requirements
+bash>=4.0
+homebrew>=4.0.0
+
+# Optional Package Managers (choose one)
+# mise>=2024.0.0  # Recommended - https://mise.jdx.dev
+# uv>=0.1.0       # Alternative - https://docs.astral.sh/uv/
+
+# System Utilities (usually pre-installed)
+grep
+xargs
+printf
+tr
+sleep
+
+# Environment Variables (configure in .env)
+# EXA_API_KEY=your_api_key_here
