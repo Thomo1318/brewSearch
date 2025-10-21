@@ -73,3 +73,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [2.0.0]: https://github.com/yourusername/brewsearch/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/yourusername/brewsearch/releases/tag/v1.0.0
+
+## [2.1.0] - 2025-10-21
+
+### Added
+- **17 New Themes from chalk.ist** - Professional syntax highlighting themes
+  - Light: Nord Light, Vercel Light
+  - Dark: Vue, Liveblocks, CodeSandbox, Chrome, Tailwind CSS, Bluesky, Dawn, Linear, Monochrome
+  - Duotone Series: Dark Sea, Dark Space, Dark Forest, Dark Sky, Dark Earth
+- **Theme Categories** - Organized themes into Light and Dark sections
+- **Theme Name Normalization** - Support for flexible theme names (spaces, hyphens, case-insensitive)
+
+### Changed
+- **Theme Selector UI** - Categorized display with Light and Dark sections
+- **Theme Count** - Expanded from 10 to 27 total themes
+- **Theme Configuration** - Combined original and chalk.ist themes in single config file
+
+### Documentation
+- Updated theme list in documentation
+- Added chalk.ist attribution and source links
+
+[2.1.0]: https://github.com/yourusername/brewsearch/compare/v2.0.0...v2.1.0

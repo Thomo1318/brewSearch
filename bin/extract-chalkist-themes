@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# Extract themes from chalk.ist and convert to BrewSearch format
+
+CHALKIST_PATH="/Users/admin/dev/activeProjects/chalk.ist/app/lib/themes.ts"
+OUTPUT_FILE="config/chalkist-themes.conf"
+
+echo "# BrewSearch Themes - Extracted from chalk.ist"
+echo "# Source: https://chalk.ist"
+echo ""
+echo "# Theme format: 6 colors mapped from chalk.ist's 10-color syntax highlighting"
+echo "# Mapping:"
+echo "#   Color 1 (Headers/Borders) = comment (darker)"
+echo "#   Color 2 (Titles) = punctuation"
+echo "#   Color 3 (Warnings) = keyword"
+echo "#   Color 4 (Highlights) = function"
+echo "#   Color 5 (Info) = variable"
+echo "#   Color 6 (Success) = string"
+echo ""
+
+# Function to convert hex to RGB
+hex_to_rgb() {
+    local hex=$1
+    hex=${hex#\#}
+    printf "%d;%d;%d" 0x${hex:0:2} 0x${hex:2:2} 0x${hex:4:2}
+}
+
+# Extract custom themes from the file
+grep -A 10 'createTheme(' "$CHALKIST_PATH" | while read line; do
+    if [[ $line =~ createTheme\(\"([^\"]+)\" ]]; then
+        theme_name="${BASH_REMATCH[1]}"
+        theme_id=$(echo "$theme_name" | tr '[:upper:]' '[:lower:]' | tr ' ' '_' | tr -d "'-")
+        echo "# Theme: $theme_name"
+        echo "THEME_${theme_id^^}_NAME='$theme_name'"
+    elif [[ $line =~ comment:\ *\"([^\"]+)\" ]]; then
+        echo "THEME_${theme_id^^}_1='$(hex_to_rgb ${BASH_REMATCH[1]})'"
+    elif [[ $line =~ punctuation:\ *\"([^\"]+)\" ]]; then
+        echo "THEME_${theme_id^^}_2='$(hex_to_rgb ${BASH_REMATCH[1]})'"
+    elif [[ $line =~ keyword:\ *\"([^\"]+)\" ]]; then
+        echo "THEME_${theme_id^^}_3='$(hex_to_rgb ${BASH_REMATCH[1]})'"
+    elif [[ $line =~ function:\ *\"([^\"]+)\" ]]; then
+        echo "THEME_${theme_id^^}_4='$(hex_to_rgb ${BASH_REMATCH[1]})'"
+    elif [[ $line =~ variable:\ *\"([^\"]+)\" ]]; then
+        echo "THEME_${theme_id^^}_5='$(hex_to_rgb ${BASH_REMATCH[1]})'"
+    elif [[ $line =~ string:\ *\"([^\"]+)\" ]]; then
+        echo "THEME_${theme_id^^}_6='$(hex_to_rgb ${BASH_REMATCH[1]})'"
+        echo ""
+    fi
+done
+

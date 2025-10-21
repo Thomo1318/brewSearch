@@ -10,19 +10,41 @@ DEFAULTS_FILE="$PROJECT_ROOT/config/defaults.conf"
 # Load themes
 source "$THEMES_FILE"
 
-# Available themes
-THEMES=(
-    "default:Custom Purple/Pink/Cyan"
-    "dracula:Dracula (Popular dark theme)"
-    "nord:Nord (Arctic bluish palette)"
-    "gruvbox:Gruvbox (Retro groove)"
-    "monokai:Monokai (Sublime Text)"
+# Available themes - organized by category
+LIGHT_THEMES=(
+    "nord_light:Nord Light"
+    "vercel_light:Vercel Light"
+)
+
+DARK_THEMES=(
+    "default:Default (Custom Purple/Pink/Cyan)"
+    "dracula:Dracula"
+    "nord:Nord"
+    "gruvbox:Gruvbox"
+    "monokai:Monokai"
     "solarized:Solarized Dark"
     "tokyo:Tokyo Night"
     "catppuccin:Catppuccin Mocha"
-    "onedark:One Dark (Atom)"
-    "synthwave:Synthwave (80s retro)"
+    "onedark:One Dark"
+    "synthwave:Synthwave '84"
+    "vue:Vue"
+    "liveblocks:Liveblocks"
+    "codesandbox:CodeSandbox"
+    "chrome:Chrome"
+    "tailwind_css:Tailwind CSS"
+    "bluesky:Bluesky"
+    "dawn:Dawn"
+    "linear:Linear"
+    "monochrome:Monochrome"
+    "duotone_dark_sea:Duotone - Dark Sea"
+    "duotone_dark_space:Duotone - Dark Space"
+    "duotone_dark_forest:Duotone - Dark Forest"
+    "duotone_dark_sky:Duotone - Dark Sky"
+    "duotone_dark_earth:Duotone - Dark Earth"
 )
+
+# Combine all themes
+ALL_THEMES=("${LIGHT_THEMES[@]}" "${DARK_THEMES[@]}")
 
 # Function to display theme preview
 show_theme_preview() {
@@ -95,22 +117,34 @@ if [ -z "$1" ]; then
     echo "║  BrewSearch Theme Selector     ║"
     echo "╚════════════════════════════════╝"
     echo
-    echo "Available themes:"
-    echo
     
-    for i in "${!THEMES[@]}"; do
-        IFS=':' read -r theme_name theme_desc <<< "${THEMES[$i]}"
-        printf "%2d) %-15s - %s\n" $((i+1)) "$theme_name" "$theme_desc"
-        show_theme_preview "$theme_name"
+    echo "=== LIGHT THEMES ==="
+    echo
+    counter=1
+    for theme_entry in "${LIGHT_THEMES[@]}"; do
+        IFS=':' read -r theme_id theme_name <<< "$theme_entry"
+        printf "%2d) %-25s\n" $counter "$theme_name"
+        show_theme_preview "$theme_id"
         echo
+        ((counter++))
     done
     
-    echo "Usage: theme <theme-name>"
-    echo "   or: theme <number>"
+    echo "=== DARK THEMES ==="
+    echo
+    for theme_entry in "${DARK_THEMES[@]}"; do
+        IFS=':' read -r theme_id theme_name <<< "$theme_entry"
+        printf "%2d) %-25s\n" $counter "$theme_name"
+        show_theme_preview "$theme_id"
+        echo
+        ((counter++))
+    done
+    
+    echo "Usage: bs theme <theme-name>"
+    echo "   or: bs theme <number>"
     echo
     echo "Examples:"
-    echo "  theme dracula"
-    echo "  theme 2"
+    echo "  bs theme bluesky"
+    echo "  bs theme 15"
     echo
     exit 0
 fi
@@ -119,20 +153,22 @@ fi
 if [[ "$1" =~ ^[0-9]+$ ]]; then
     # Number provided
     idx=$((${1} - 1))
-    if [ $idx -ge 0 ] && [ $idx -lt ${#THEMES[@]} ]; then
-        IFS=':' read -r theme_name theme_desc <<< "${THEMES[$idx]}"
-        apply_theme "$theme_name"
+    if [ $idx -ge 0 ] && [ $idx -lt ${#ALL_THEMES[@]} ]; then
+        IFS=':' read -r theme_id theme_name <<< "${ALL_THEMES[$idx]}"
+        apply_theme "$theme_id"
     else
-        echo "Error: Invalid theme number. Use 1-${#THEMES[@]}"
+        echo "Error: Invalid theme number. Use 1-${#ALL_THEMES[@]}"
         exit 1
     fi
 else
-    # Name provided
+    # Name provided - normalize input
+    input_theme=$(echo "$1" | tr '[:upper:]' '[:lower:]' | tr ' ' '_' | tr -d "'-")
+    
     theme_found=false
-    for theme_entry in "${THEMES[@]}"; do
-        IFS=':' read -r theme_name theme_desc <<< "$theme_entry"
-        if [ "$theme_name" = "$1" ]; then
-            apply_theme "$theme_name"
+    for theme_entry in "${ALL_THEMES[@]}"; do
+        IFS=':' read -r theme_id theme_name <<< "$theme_entry"
+        if [ "$theme_id" = "$input_theme" ]; then
+            apply_theme "$theme_id"
             theme_found=true
             break
         fi
@@ -140,7 +176,7 @@ else
     
     if [ "$theme_found" = false ]; then
         echo "Error: Theme '$1' not found"
-        echo "Run 'theme' without arguments to see available themes"
+        echo "Run 'bs theme' without arguments to see available themes"
         exit 1
     fi
 fi

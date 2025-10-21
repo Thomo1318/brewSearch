@@ -1,0 +1,81 @@
+#!/bin/bash
+###***brewsearch***###
+
+# To be able to call this script anywhere create a symlink in your ~/.local/bin directory allowing the script to remain in its project folder.
+# ln -s /Users/<USER NAME>/<PROJECT FOLDER>/brewsearch ~/.local/bin/bs
+# Link the script as "bs" for easier call
+
+# Progress bar function
+show_progress() {
+    local current=$1
+    local total=$2
+    local message=$3
+    
+    # Calculate percentage
+    local percentage=$(( (current * 100) / total ))
+    
+    # Create progress bar (20 chars max)
+    local bar_length=20
+    local filled=$(( (current * bar_length) / total ))
+    local bar=$(printf "%*s" "$filled" | tr ' ' '#')
+    local spaces=$(printf "%*s" $((bar_length - filled)) | tr ' ' '-')
+    
+    echo -ne "\r[$bar$spaces] $percentage% $message"
+}
+
+# Check if an argument is provided
+if [ -z "$1" ]; then
+  echo "Usage: bs [ARGUMENT]"
+  exit 1
+fi
+
+echo "Searching for: $1"
+
+# Show initial progress
+show_progress 0 4 "Starting search..."
+sleep 0.5
+
+# Get formulae matching '[ARGUMENT]'
+show_progress 1 4 "Searching formulae..."
+FORMULAE=$(brew search --formula "$1" | grep -E '^[a-zA-Z0-9_-]+$')
+
+# Get casks matching '[ARGUMENT]'
+show_progress 2 4 "Searching casks..."
+CASKS=$(brew search --cask "$1" | grep -E '^[a-zA-Z0-9_-]+$')
+
+# Gathering info
+show_progress 3 4 "Gathering package info..."
+sleep 0.5
+
+show_progress 4 4 "Complete!"
+echo -e "\n"
+
+echo "Results for: $1"
+echo
+
+echo "***Formulae***"
+echo "--------------"
+if [ -n "$FORMULAE" ]; then
+  echo "$FORMULAE" | while IFS= read -r formula; do
+    brew info --formula "$formula"
+    echo
+    echo "***--------------------------------------------------------------------***"
+    echo
+  done
+else
+  echo "No formulae found."
+fi
+
+echo
+echo "***Cask***"
+echo "----------"
+if [ -n "$CASKS" ]; then
+  echo "$CASKS" | while IFS= read -r cask; do
+    brew info --cask "$cask"
+    echo
+    echo "***--------------------------------------------------------------------***"
+    echo
+  done
+else
+  echo "No casks found."
+fi
