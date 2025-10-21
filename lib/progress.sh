@@ -1,18 +1,16 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Progress bar utilities
+
+# Get script directory and source colors
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/colors.sh"
 
 show_progress() {
     local current=$1
     local total=$2
     local message=$3
     
-    local percentage=$(( (current * 100) / total ))
-    local bar_length=20
-    local filled=$(( (current * bar_length) / total ))
-    local bar=$(printf "%*s" "$filled" | tr ' ' '#')
-    local spaces=$(printf "%*s" $((bar_length - filled)) | tr ' ' '-')
-    
-    echo -ne "\r[$bar$spaces] $percentage% $message"
+    draw_progress_bar "$current" "$total" "$message"
 }
 
 clear_progress() {

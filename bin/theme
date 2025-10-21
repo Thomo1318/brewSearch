@@ -1,0 +1,146 @@
+#!/usr/bin/env bash
+###***theme-selector***###
+# Theme selector for brewsearch
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+THEMES_FILE="$PROJECT_ROOT/config/themes.conf"
+DEFAULTS_FILE="$PROJECT_ROOT/config/defaults.conf"
+
+# Load themes
+source "$THEMES_FILE"
+
+# Available themes
+THEMES=(
+    "default:Custom Purple/Pink/Cyan"
+    "dracula:Dracula (Popular dark theme)"
+    "nord:Nord (Arctic bluish palette)"
+    "gruvbox:Gruvbox (Retro groove)"
+    "monokai:Monokai (Sublime Text)"
+    "solarized:Solarized Dark"
+    "tokyo:Tokyo Night"
+    "catppuccin:Catppuccin Mocha"
+    "onedark:One Dark (Atom)"
+    "synthwave:Synthwave (80s retro)"
+)
+
+# Function to display theme preview
+show_theme_preview() {
+    local theme=$1
+    local theme_upper=$(echo "$theme" | tr '[:lower:]' '[:upper:]')
+    
+    # Get theme colors using eval
+    local c1=$(eval echo \$THEME_${theme_upper}_1)
+    local c2=$(eval echo \$THEME_${theme_upper}_2)
+    local c3=$(eval echo \$THEME_${theme_upper}_3)
+    local c4=$(eval echo \$THEME_${theme_upper}_4)
+    local c5=$(eval echo \$THEME_${theme_upper}_5)
+    local c6=$(eval echo \$THEME_${theme_upper}_6)
+    
+    local c1_color="\033[38;2;${c1}m"
+    local c2_color="\033[38;2;${c2}m"
+    local c3_color="\033[38;2;${c3}m"
+    local c4_color="\033[38;2;${c4}m"
+    local c5_color="\033[38;2;${c5}m"
+    local c6_color="\033[38;2;${c6}m"
+    local nc="\033[0m"
+    
+    echo -e "  ${c1_color}███${nc} ${c2_color}███${nc} ${c3_color}███${nc} ${c4_color}███${nc} ${c5_color}███${nc} ${c6_color}███${nc}"
+    echo -e "  ${c1_color}▓▓▓${nc} ${c2_color}▓▓▓${nc} ${c3_color}▓▓▓${nc} ${c4_color}▓▓▓${nc} ${c5_color}▓▓▓${nc} ${c6_color}▓▓▓${nc}"
+}
+
+# Function to apply theme
+apply_theme() {
+    local theme=$1
+    local theme_upper=$(echo "$theme" | tr '[:lower:]' '[:upper:]')
+    
+    # Get theme colors using eval
+    local c1=$(eval echo \$THEME_${theme_upper}_1)
+    local c2=$(eval echo \$THEME_${theme_upper}_2)
+    local c3=$(eval echo \$THEME_${theme_upper}_3)
+    local c4=$(eval echo \$THEME_${theme_upper}_4)
+    local c5=$(eval echo \$THEME_${theme_upper}_5)
+    local c6=$(eval echo \$THEME_${theme_upper}_6)
+    
+    # Update defaults.conf
+    cat > "$DEFAULTS_FILE" << CONF
+# BrewSearch Configuration
+# Current theme: $theme
+
+# Progress bar settings
+PROGRESS_BAR_LENGTH=30
+PROGRESS_UPDATE_DELAY=0.2
+
+# Output settings
+SHOW_SEPARATORS=true
+SEPARATOR_STYLE="━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# Theme colors (RGB values)
+THEME_COLOR_1='${c1}'
+THEME_COLOR_2='${c2}'
+THEME_COLOR_3='${c3}'
+THEME_COLOR_4='${c4}'
+THEME_COLOR_5='${c5}'
+THEME_COLOR_6='${c6}'
+CONF
+    
+    echo "✓ Theme '$theme' applied successfully!"
+    echo "  Run 'bs <package>' to see the new theme in action."
+}
+
+# Main menu
+if [ -z "$1" ]; then
+    echo
+    echo "╔════════════════════════════════╗"
+    echo "║  BrewSearch Theme Selector     ║"
+    echo "╚════════════════════════════════╝"
+    echo
+    echo "Available themes:"
+    echo
+    
+    for i in "${!THEMES[@]}"; do
+        IFS=':' read -r theme_name theme_desc <<< "${THEMES[$i]}"
+        printf "%2d) %-15s - %s\n" $((i+1)) "$theme_name" "$theme_desc"
+        show_theme_preview "$theme_name"
+        echo
+    done
+    
+    echo "Usage: theme <theme-name>"
+    echo "   or: theme <number>"
+    echo
+    echo "Examples:"
+    echo "  theme dracula"
+    echo "  theme 2"
+    echo
+    exit 0
+fi
+
+# Apply theme by name or number
+if [[ "$1" =~ ^[0-9]+$ ]]; then
+    # Number provided
+    idx=$((${1} - 1))
+    if [ $idx -ge 0 ] && [ $idx -lt ${#THEMES[@]} ]; then
+        IFS=':' read -r theme_name theme_desc <<< "${THEMES[$idx]}"
+        apply_theme "$theme_name"
+    else
+        echo "Error: Invalid theme number. Use 1-${#THEMES[@]}"
+        exit 1
+    fi
+else
+    # Name provided
+    theme_found=false
+    for theme_entry in "${THEMES[@]}"; do
+        IFS=':' read -r theme_name theme_desc <<< "$theme_entry"
+        if [ "$theme_name" = "$1" ]; then
+            apply_theme "$theme_name"
+            theme_found=true
+            break
+        fi
+    done
+    
+    if [ "$theme_found" = false ]; then
+        echo "Error: Theme '$1' not found"
+        echo "Run 'theme' without arguments to see available themes"
+        exit 1
+    fi
+fi

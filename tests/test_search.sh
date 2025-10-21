@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Test search functionality
 
 source "$(dirname "$0")/../lib/search.sh"

@@ -1,11 +1,24 @@
-#!/bin/bash
+#!/usr/bin/env bash
 ###***brewsearch***###
 
-# Get script directory
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Get the real script directory (resolve symlinks)
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do
+  SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$SCRIPT_DIR/$SOURCE"
+done
+SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
+# Check for subcommands
+if [ "$1" = "theme" ]; then
+  shift  # Remove 'theme' from arguments
+  exec "$SCRIPT_DIR/theme" "$@"
+fi
+
 # Source libraries
+source "$PROJECT_ROOT/lib/colors.sh"
 source "$PROJECT_ROOT/lib/progress.sh"
 source "$PROJECT_ROOT/lib/search.sh"
 source "$PROJECT_ROOT/lib/format.sh"
@@ -15,49 +28,119 @@ source "$PROJECT_ROOT/lib/format.sh"
 
 # Check if an argument is provided
 if [ -z "$1" ]; then
-  echo "Usage: bs [ARGUMENT]"
+  echo -e "${COLOR_ERROR}Usage: bs [ARGUMENT]${NC}"
+  echo -e "${COLOR_INFO}       bs theme [theme-name|number]${NC}"
+  echo
+  echo -e "${COLOR_INFO}Examples:${NC}"
+  echo -e "  ${DIM}bs redis${NC}          # Search for redis packages"
+  echo -e "  ${DIM}bs theme${NC}          # View available themes"
+  echo -e "  ${DIM}bs theme dracula${NC}  # Apply Dracula theme"
   exit 1
 fi
 
-echo "Searching for: $1"
+# Print fancy header
+echo
+draw_box "BrewSearch" "$PURPLE_DARK"
+echo
+echo -e "${COLOR_INFO}Searching for:${NC} ${BOLD}${COLOR_PACKAGE}$1${NC}"
+echo
 
 # Show initial progress
 show_progress 0 4 "Starting search..."
-sleep 0.5
+sleep 0.2
 
 # Get formulae matching '[ARGUMENT]'
 show_progress 1 4 "Searching formulae..."
-FORMULAE=$(search_formulae "$1")
+FORMULAE=$(search_formulae "$1" 2>/dev/null)
 
 # Get casks matching '[ARGUMENT]'
 show_progress 2 4 "Searching casks..."
-CASKS=$(search_casks "$1")
+CASKS=$(search_casks "$1" 2>/dev/null)
 
 # Gathering info
 show_progress 3 4 "Gathering package info..."
-sleep 0.5
+sleep 0.2
 
 show_progress 4 4 "Complete!"
 clear_progress
 
-echo "Results for: $1"
-
-print_section_header "Formulae"
+# Count results (handle empty strings properly)
 if [ -n "$FORMULAE" ]; then
-  echo "$FORMULAE" | while IFS= read -r formula; do
-    brew info --formula "$formula"
-    print_separator
-  done
+    FORMULAE_COUNT=$(echo "$FORMULAE" | wc -l | tr -d ' ')
 else
-  echo "No formulae found."
+    FORMULAE_COUNT=0
 fi
 
-print_section_header "Cask"
 if [ -n "$CASKS" ]; then
-  echo "$CASKS" | while IFS= read -r cask; do
-    brew info --cask "$cask"
-    print_separator
+    CASKS_COUNT=$(echo "$CASKS" | wc -l | tr -d ' ')
+else
+    CASKS_COUNT=0
+fi
+
+TOTAL_COUNT=$((FORMULAE_COUNT + CASKS_COUNT))
+
+if [ "$TOTAL_COUNT" -eq 0 ]; then
+    print_badge "warning" "No packages found matching '$1'"
+    echo
+    exit 0
+fi
+
+# Print results summary
+echo -e "${COLOR_INFO}Found:${NC} ${BOLD}${COLOR_SUCCESS}${FORMULAE_COUNT}${NC} ${COLOR_INFO}formulae${NC}, ${BOLD}${COLOR_SUCCESS}${CASKS_COUNT}${NC} ${COLOR_INFO}casks${NC}"
+
+# Display formulae
+print_section_header "Formulae"
+if [ "$FORMULAE_COUNT" -gt 0 ]; then
+  # Collect all brew info output first for better performance
+  FORMULAE_INFO=""
+  while IFS= read -r formula; do
+    if [ -n "$formula" ]; then
+      FORMULAE_INFO+=$(brew info --formula "$formula" 2>/dev/null)
+      FORMULAE_INFO+=$'\n---SEPARATOR---\n'
+    fi
+  done <<< "$FORMULAE"
+  
+  # Process and display with colors
+  echo "$FORMULAE_INFO" | while IFS= read -r line; do
+    if [ "$line" = "---SEPARATOR---" ]; then
+      print_result_separator
+    else
+      highlight_package_line "$line"
+    fi
   done
 else
-  echo "No casks found."
+  print_badge "info" "No formulae found"
+  echo
 fi
+
+# Display casks
+print_section_header "Casks"
+if [ "$CASKS_COUNT" -gt 0 ]; then
+  # Collect all brew info output first for better performance
+  CASKS_INFO=""
+  while IFS= read -r cask; do
+    if [ -n "$cask" ]; then
+      CASKS_INFO+=$(brew info --cask "$cask" 2>/dev/null)
+      CASKS_INFO+=$'\n---SEPARATOR---\n'
+    fi
+  done <<< "$CASKS"
+  
+  # Process and display with colors
+  echo "$CASKS_INFO" | while IFS= read -r line; do
+    if [ "$line" = "---SEPARATOR---" ]; then
+      print_result_separator
+    else
+      highlight_package_line "$line"
+    fi
+  done
+else
+  print_badge "info" "No casks found"
+  echo
+fi
+
+# Footer
+echo
+draw_separator "═" "$CYAN_BRIGHT" 70
+echo -e "${COLOR_SUCCESS}Search complete!${NC} ${COLOR_INFO}Found ${BOLD}${TOTAL_COUNT}${NC} ${COLOR_INFO}package(s)${NC}"
+draw_separator "═" "$CYAN_BRIGHT" 70
+echo

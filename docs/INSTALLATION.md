@@ -61,22 +61,43 @@ Add your Exa API key:
 EXA_API_KEY=your_actual_api_key_here
 ```
 
-### 4. Create Symlink (Optional)
+### 4. Install BrewSearch
 
-For easier access, create a symlink to use `bs` command anywhere:
-
+Run the installer:
 ```bash
-# Ensure ~/.local/bin exists
-mkdir -p ~/.local/bin
-
-# Create symlink
-ln -s $(pwd)/bin/brewsearch ~/.local/bin/bs
-
-# Add to PATH if not already (add to ~/.zshrc or ~/.bashrc)
-export PATH="$HOME/.local/bin:$PATH"
+./bin/install
 ```
 
-### 5. Verify Installation
+This will:
+- Create `~/.local/bin` if it doesn't exist
+- Create a symlink `~/.local/bin/bs` → `bin/brewsearch`
+- Check if `~/.local/bin` is in your PATH
+- Provide instructions if PATH needs updating
+
+### 5. Add to PATH (if needed)
+
+If the installer says `~/.local/bin` is not in your PATH, add it:
+
+**For Zsh (default on macOS):**
+```bash
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+**For Bash:**
+```bash
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+### 6. Clear Shell Cache
+
+After installation, clear the shell's command cache:
+```bash
+hash -r
+```
+
+### 7. Verify Installation
 
 Test the installation:
 ```bash
@@ -108,12 +129,65 @@ Install Homebrew:
 
 Follow the post-installation instructions to add Homebrew to your PATH.
 
+### Command Not Found: bs
+
+**Issue**: Shell can't find the `bs` command
+
+**Solutions**:
+
+1. **Check if symlink exists**:
+   ```bash
+   ls -la ~/.local/bin/bs
+   ```
+
+2. **Verify PATH**:
+   ```bash
+   echo $PATH | grep ".local/bin"
+   ```
+
+3. **Add to PATH** (if missing):
+   ```bash
+   export PATH="$HOME/.local/bin:$PATH"
+   ```
+
+4. **Clear shell cache**:
+   ```bash
+   hash -r
+   ```
+
+5. **Restart terminal** or reload shell config:
+   ```bash
+   source ~/.zshrc  # or source ~/.bashrc
+   ```
+
+6. **Re-run installer**:
+   ```bash
+   ./bin/install
+   ```
+
+### Symlink Points to Wrong Location
+
+If you moved the project directory:
+
+1. **Remove old symlink**:
+   ```bash
+   rm ~/.local/bin/bs
+   ```
+
+2. **Re-run installer**:
+   ```bash
+   cd /path/to/new/location/brewsearch
+   ./bin/install
+   ```
+
 ### Permission Denied
 
-Make sure the script is executable:
+Make sure scripts are executable:
 ```bash
 chmod +x bin/brewsearch
 chmod +x bin/check-requirements
+chmod +x bin/theme
+chmod +x bin/install
 ```
 
 ### .env File Issues
@@ -136,6 +210,8 @@ git pull origin main
 ./bin/check-requirements
 ```
 
+The symlink will continue to work as it points to the script location.
+
 ## Uninstallation
 
 Remove the symlink:
@@ -147,3 +223,63 @@ Remove the repository:
 ```bash
 rm -rf /path/to/brewsearch
 ```
+
+## Alternative Installation (Without Symlink)
+
+If you prefer not to use a symlink, you can:
+
+1. **Add alias to shell config**:
+   ```bash
+   echo 'alias bs="/path/to/brewsearch/bin/brewsearch"' >> ~/.zshrc
+   source ~/.zshrc
+   ```
+
+2. **Run directly**:
+   ```bash
+   /path/to/brewsearch/bin/brewsearch redis
+   ```
+
+3. **Add bin directory to PATH**:
+   ```bash
+   echo 'export PATH="/path/to/brewsearch/bin:$PATH"' >> ~/.zshrc
+   source ~/.zshrc
+   ```
+
+## Post-Installation
+
+### Choose a Theme
+
+Browse available themes:
+```bash
+theme
+```
+
+Apply a theme:
+```bash
+theme dracula
+```
+
+### Test Search
+
+Try searching for packages:
+```bash
+bs python
+bs docker
+bs redis
+```
+
+### Create Shell Alias (Optional)
+
+Add convenient aliases:
+```bash
+# Add to ~/.zshrc or ~/.bashrc
+alias bsf='bs --formula'  # Search formulae only (future feature)
+alias bsc='bs --cask'     # Search casks only (future feature)
+```
+
+## References
+
+- [Bash Version Guide](BASH_VERSION.md)
+- [Theme Guide](THEMES.md)
+- [Usage Guide](USAGE.md)
+- [Development Guide](DEVELOPMENT.md)

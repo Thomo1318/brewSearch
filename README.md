@@ -208,3 +208,31 @@ MIT License - See LICENSE file for details
 ---
 
 **Made with ❤️ for the Homebrew community**
+
+## Bash Version Note
+
+macOS ships with Bash 3.2.57. BrewSearch requires Bash 4.0+.
+
+**Quick Fix:**
+```bash
+brew install bash
+export PATH="/opt/homebrew/bin:$PATH"
+```
+
+See [Bash Version Guide](docs/BASH_VERSION.md) for details.
+
+## Themes
+
+BrewSearch includes 10 beautiful color themes:
+
+```bash
+# View all themes
+theme
+
+# Apply a theme
+theme dracula
+theme nord
+theme synthwave
+```
+
+See [Theme Guide](docs/THEMES.md) for all available themes and customization options.

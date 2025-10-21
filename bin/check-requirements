@@ -1,21 +1,21 @@
-#!/bin/bash
+#!/usr/bin/env bash
 ###***check-requirements***###
 # System requirements checker and installer for brewsearch
 
 set -e
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+# Get script directory and source colors
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+source "$PROJECT_ROOT/lib/colors.sh"
 
 # Counters
 MISSING_COUNT=0
 INSTALLED_COUNT=0
 
-echo -e "${BLUE}=== BrewSearch Requirements Checker ===${NC}\n"
+echo
+draw_box "BrewSearch Requirements Checker" "$PURPLE_DARK"
+echo
 
 # Function to check if command exists
 command_exists() {
@@ -27,42 +27,63 @@ print_status() {
     local status=$1
     local message=$2
     if [ "$status" = "ok" ]; then
-        echo -e "${GREEN}✓${NC} $message"
+        print_success "$message"
     elif [ "$status" = "missing" ]; then
-        echo -e "${RED}✗${NC} $message"
+        print_error "$message"
         ((MISSING_COUNT++))
     elif [ "$status" = "warning" ]; then
-        echo -e "${YELLOW}⚠${NC} $message"
+        print_warning "$message"
     elif [ "$status" = "info" ]; then
-        echo -e "${BLUE}ℹ${NC} $message"
+        print_info "$message"
     fi
 }
 
-# Check Bash version
-echo "Checking Bash version..."
-BASH_VERSION_NUM="${BASH_VERSION%%.*}"
-if [ "$BASH_VERSION_NUM" -ge 4 ]; then
-    print_status "ok" "Bash $BASH_VERSION (>= 4.0 required)"
+# Check Bash version - use the actual running bash
+echo -e "${BOLD}${COLOR_HEADER}Checking Bash version...${NC}"
+CURRENT_BASH_VERSION="${BASH_VERSION%%.*}"
+CURRENT_BASH_PATH="$(command -v bash)"
+
+if [ "$CURRENT_BASH_VERSION" -ge 4 ]; then
+    print_status "ok" "Bash $BASH_VERSION (>= 4.0 required) at $CURRENT_BASH_PATH"
 else
-    print_status "missing" "Bash $BASH_VERSION (4.0+ required)"
+    print_status "missing" "Bash $BASH_VERSION (4.0+ required) at $CURRENT_BASH_PATH"
+    
+    # Check if newer bash is available
+    if command_exists brew; then
+        BREW_BASH="/opt/homebrew/bin/bash"
+        if [ -x "$BREW_BASH" ]; then
+            BREW_BASH_VERSION=$("$BREW_BASH" --version | head -n1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -n1)
+            BREW_BASH_MAJOR="${BREW_BASH_VERSION%%.*}"
+            
+            if [ "$BREW_BASH_MAJOR" -ge 4 ]; then
+                echo -e "  ${COLOR_WARNING}Found newer Bash $BREW_BASH_VERSION at $BREW_BASH${NC}"
+                echo -e "  ${COLOR_INFO}To use it, run scripts with: ${BOLD}$BREW_BASH ./bin/brewsearch${NC}"
+                echo -e "  ${COLOR_INFO}Or change your default shell:${NC}"
+                echo -e "    ${DIM}sudo bash -c 'echo $BREW_BASH >> /etc/shells'${NC}"
+                echo -e "    ${DIM}chsh -s $BREW_BASH${NC}"
+            fi
+        else
+            echo -e "  ${COLOR_WARNING}Install newer Bash: ${BOLD}brew install bash${NC}"
+        fi
+    fi
 fi
 echo
 
 # Check Homebrew
-echo "Checking Homebrew..."
+echo -e "${BOLD}${COLOR_HEADER}Checking Homebrew...${NC}"
 if command_exists brew; then
     BREW_VERSION=$(brew --version | head -n1)
     print_status "ok" "$BREW_VERSION"
 else
     print_status "missing" "Homebrew not found"
-    echo -e "${YELLOW}Install Homebrew:${NC}"
-    echo "  /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
-    echo "  https://brew.sh"
+    echo -e "${COLOR_WARNING}Install Homebrew:${NC}"
+    echo -e "  ${DIM}/bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\"${NC}"
+    echo -e "  ${COLOR_URL}https://brew.sh${NC}"
 fi
 echo
 
 # Check for package managers (optional but recommended)
-echo "Checking package managers (optional)..."
+echo -e "${BOLD}${COLOR_HEADER}Checking package managers (optional)...${NC}"
 HAS_PKG_MANAGER=false
 
 if command_exists mise; then
@@ -83,20 +104,20 @@ fi
 
 if [ "$HAS_PKG_MANAGER" = false ]; then
     echo
-    echo -e "${YELLOW}Recommended: Install a package manager for better environment management${NC}"
+    echo -e "${COLOR_WARNING}Recommended: Install a package manager for better environment management${NC}"
     echo
-    echo -e "${BLUE}Option 1: mise (Recommended)${NC}"
-    echo "  curl https://mise.run | sh"
-    echo "  https://mise.jdx.dev"
+    echo -e "${BOLD}${COLOR_TITLE}Option 1: mise (Recommended)${NC}"
+    echo -e "  ${DIM}curl https://mise.run | sh${NC}"
+    echo -e "  ${COLOR_URL}https://mise.jdx.dev${NC}"
     echo
-    echo -e "${BLUE}Option 2: uv${NC}"
-    echo "  curl -LsSf https://astral.sh/uv/install.sh | sh"
-    echo "  https://docs.astral.sh/uv/"
+    echo -e "${BOLD}${COLOR_TITLE}Option 2: uv${NC}"
+    echo -e "  ${DIM}curl -LsSf https://astral.sh/uv/install.sh | sh${NC}"
+    echo -e "  ${COLOR_URL}https://docs.astral.sh/uv/${NC}"
 fi
 echo
 
 # Check grep (should be available on all Unix systems)
-echo "Checking core utilities..."
+echo -e "${BOLD}${COLOR_HEADER}Checking core utilities...${NC}"
 if command_exists grep; then
     print_status "ok" "grep available"
 else
@@ -111,9 +132,7 @@ fi
 echo
 
 # Check for .env file
-echo "Checking configuration..."
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+echo -e "${BOLD}${COLOR_HEADER}Checking configuration...${NC}"
 
 if [ -f "$PROJECT_ROOT/.env" ]; then
     print_status "ok" ".env file exists"
@@ -130,26 +149,45 @@ if [ -f "$PROJECT_ROOT/.env" ]; then
     fi
 else
     print_status "missing" ".env file not found"
-    echo -e "${YELLOW}Create .env file:${NC}"
-    echo "  cp .env.example .env"
-    echo "  # Then edit .env and add your API keys"
+    echo -e "${COLOR_WARNING}Create .env file:${NC}"
+    echo -e "  ${DIM}cp .env.example .env${NC}"
+    echo -e "  ${DIM}# Then edit .env and add your API keys${NC}"
 fi
 echo
 
 # Summary
-echo -e "${BLUE}=== Summary ===${NC}"
+echo
+draw_separator "═" "$PURPLE_DARK" 70
+echo -e "${BOLD}${COLOR_HEADER}Summary${NC}"
+draw_separator "═" "$PURPLE_DARK" 70
+echo
+
 if [ $MISSING_COUNT -eq 0 ]; then
-    echo -e "${GREEN}✓ All required dependencies are installed!${NC}"
+    print_badge "success" "All required dependencies are installed!"
     echo
-    echo "You can now use brewsearch:"
-    echo "  ./bin/brewsearch redis"
+    echo -e "${COLOR_INFO}You can now use brewsearch:${NC}"
+    
+    # Provide correct usage based on bash version
+    if [ "$CURRENT_BASH_VERSION" -ge 4 ]; then
+        echo -e "  ${BOLD}${COLOR_PACKAGE}./bin/brewsearch redis${NC}"
+    else
+        BREW_BASH="/opt/homebrew/bin/bash"
+        if [ -x "$BREW_BASH" ]; then
+            echo -e "  ${BOLD}${COLOR_PACKAGE}$BREW_BASH ./bin/brewsearch redis${NC}"
+        else
+            echo -e "  ${BOLD}${COLOR_PACKAGE}bash ./bin/brewsearch redis${NC}  ${DIM}# (may need bash 4.0+)${NC}"
+        fi
+    fi
+    
     echo
-    echo "Or create a symlink for easier access:"
-    echo "  ln -s $(pwd)/bin/brewsearch ~/.local/bin/bs"
+    echo -e "${COLOR_INFO}Or create a symlink for easier access:${NC}"
+    echo -e "  ${DIM}ln -s $(pwd)/bin/brewsearch ~/.local/bin/bs${NC}"
+    echo
     exit 0
 else
-    echo -e "${RED}✗ $MISSING_COUNT required dependencies are missing${NC}"
+    print_badge "error" "$MISSING_COUNT required dependencies are missing"
     echo
-    echo "Please install the missing dependencies and run this script again."
+    echo -e "${COLOR_WARNING}Please install the missing dependencies and run this script again.${NC}"
+    echo
     exit 1
 fi
