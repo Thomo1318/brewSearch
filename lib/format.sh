@@ -18,8 +18,8 @@ print_section_header() {
 
 print_result_separator() {
     echo
-    echo -ne "${PURPLE_MID}"
-    printf "━%.0s" $(seq 1 70)
-    echo -e "${NC}"
+    echo -ne "${PURPLE_MID}***"
+    printf "━%.0s" $(seq 1 64)
+    echo -e "***${NC}"
     echo
 }
