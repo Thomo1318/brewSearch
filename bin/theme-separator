@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+###***separator-selector***###
+# Separator style selector for brewsearch
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+THEMES_FILE="$PROJECT_ROOT/config/themes.conf"
+DEFAULTS_FILE="$PROJECT_ROOT/config/defaults.conf"
+
+# Load themes/separators
+source "$THEMES_FILE"
+
+# Separator styles
+SEPARATORS=(
+    "1:Default (Stars + Line):***━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━***"
+    "2:Double Line:═══════════════════════════════════════════════════════════════════════"
+    "3:Dashed:- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
+    "4:Dotted:· · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·"
+    "5:Wave:~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    "6:Stars:***********************************************************************"
+    "7:Arrows:>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    "8:Diamonds:◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆"
+    "9:Heavy Line:━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    "10:Mixed:▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬"
+    "11:None (No Separator):"
+)
+
+# Function to apply separator
+apply_separator() {
+    local style_num=$1
+    local separator=$(eval echo \$SEPARATOR_STYLE_${style_num})
+    
+    # Read current config
+    if [ -f "$DEFAULTS_FILE" ]; then
+        # Update separator style in config
+        sed -i '' "s|^SEPARATOR_STYLE=.*|SEPARATOR_STYLE=\"$separator\"|" "$DEFAULTS_FILE"
+        
+        # If SEPARATOR_STYLE doesn't exist, add it
+        if ! grep -q "^SEPARATOR_STYLE=" "$DEFAULTS_FILE"; then
+            echo "SEPARATOR_STYLE=\"$separator\"" >> "$DEFAULTS_FILE"
+        fi
+        
+        echo "✓ Separator style $style_num applied successfully!"
+        echo "  Run 'bs <package>' to see the new separator."
+    else
+        echo "✗ Configuration file not found"
+        exit 1
+    fi
+}
+
+# Main menu
+if [ -z "$1" ]; then
+    echo
+    echo "╔════════════════════════════════╗"
+    echo "║  Separator Style Selector      ║"
+    echo "╚════════════════════════════════╝"
+    echo
+    echo "Choose a separator style:"
+    echo
+    
+    for sep_entry in "${SEPARATORS[@]}"; do
+        IFS=':' read -r num name preview <<< "$sep_entry"
+        printf "%2d) %-30s\n" "$num" "$name"
+        if [ -n "$preview" ]; then
+            echo "    $preview"
+        else
+            echo "    (No separator between results)"
+        fi
+        echo
+    done
+    
+    echo "Usage: bs separator <number>"
+    echo
+    echo "Examples:"
+    echo "  bs separator 1"
+    echo "  bs separator 11  # No separator"
+    echo
+    exit 0
+fi
+
+# Apply separator by number
+if [[ "$1" =~ ^[0-9]+$ ]]; then
+    if [ "$1" -ge 1 ] && [ "$1" -le 11 ]; then
+        apply_separator "$1"
+    else
+        echo "Error: Invalid separator number. Use 1-11"
+        exit 1
+    fi
+else
+    echo "Error: Please provide a number (1-11)"
+    exit 1
+fi

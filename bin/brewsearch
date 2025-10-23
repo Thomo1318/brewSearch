@@ -15,6 +15,11 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 if [ "$1" = "theme" ]; then
   shift  # Remove 'theme' from arguments
   exec "$SCRIPT_DIR/theme" "$@"
+elif [ "$1" = "separator" ]; then
+  shift  # Remove 'separator' from arguments
+  exec "$SCRIPT_DIR/theme-separator" "$@"
+elif [ "$1" = "font" ]; then
+  exec "$SCRIPT_DIR/font-setup"
 fi
 
 # Source libraries
@@ -30,11 +35,16 @@ source "$PROJECT_ROOT/lib/format.sh"
 if [ -z "$1" ]; then
   echo -e "${COLOR_ERROR}Usage: bs [ARGUMENT]${NC}"
   echo -e "${COLOR_INFO}       bs theme [theme-name|number]${NC}"
+  echo -e "${COLOR_INFO}       bs separator [number]${NC}"
+  echo -e "${COLOR_INFO}       bs font${NC}"
   echo
   echo -e "${COLOR_INFO}Examples:${NC}"
   echo -e "  ${DIM}bs redis${NC}          # Search for redis packages"
   echo -e "  ${DIM}bs theme${NC}          # View available themes"
-  echo -e "  ${DIM}bs theme dracula${NC}  # Apply Dracula theme"
+  echo -e "  ${DIM}bs theme bluesky${NC}  # Apply Bluesky theme"
+  echo -e "  ${DIM}bs separator${NC}      # View separator styles"
+  echo -e "  ${DIM}bs separator 5${NC}    # Apply wave separator"
+  echo -e "  ${DIM}bs font${NC}           # Setup Nerd Font"
   exit 1
 fi
 

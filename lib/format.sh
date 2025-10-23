@@ -17,9 +17,22 @@ print_section_header() {
 }
 
 print_result_separator() {
-    echo
-    echo -ne "${PURPLE_MID}***"
-    printf "━%.0s" $(seq 1 64)
-    echo -e "***${NC}"
-    echo
+    # Use configured separator style or default
+    if [ -n "$SEPARATOR_STYLE" ]; then
+        if [ -z "$SEPARATOR_STYLE" ]; then
+            # No separator (style 11)
+            echo
+        else
+            echo
+            echo -e "${PURPLE_MID}${SEPARATOR_STYLE}${NC}"
+            echo
+        fi
+    else
+        # Default separator
+        echo
+        echo -ne "${PURPLE_MID}***"
+        printf "━%.0s" $(seq 1 64)
+        echo -e "***${NC}"
+        echo
+    fi
 }

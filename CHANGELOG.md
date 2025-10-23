@@ -94,3 +94,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added chalk.ist attribution and source links
 
 [2.1.0]: https://github.com/yourusername/brewsearch/compare/v2.0.0...v2.1.0
+
+## [2.2.0] - 2025-10-21
+
+### Added
+- **Font Setup Tool** (`bs font`) - Interactive Nerd Font installation
+  - Auto-install FiraCode Nerd Font Mono
+  - Browse fonts at programmingfonts.org
+  - Homebrew installation commands
+  - Manual installation guide
+  - Font patcher for existing fonts (advanced)
+  - Current font detection
+- **Separator Styles** (`bs separator`) - 11 customizable separator styles
+  - Default (Stars + Line)
+  - Double Line, Dashed, Dotted
+  - Wave, Stars, Arrows, Diamonds
+  - Heavy Line, Mixed
+  - None (no separator)
+- **Subcommands** - Enhanced command structure
+  - `bs font` - Font setup wizard
+  - `bs separator` - Separator style selector
+  - `bs theme` - Theme selector (existing)
+
+### Changed
+- **Separator Format** - Added *** markers at start and end
+- **Usage Help** - Updated with new subcommands
+- **Configuration** - Added separator style persistence
+
+### Documentation
+- Font setup guide with multiple installation methods
+- Separator style previews
+- Nerd Font recommendations
+
+[2.2.0]: https://github.com/yourusername/brewsearch/compare/v2.1.0...v2.2.0
