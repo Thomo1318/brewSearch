@@ -236,3 +236,6 @@ theme synthwave
 ```
 
 See [Theme Guide](docs/THEMES.md) for all available themes and customization options.
+
+![Alt](https://repobeats.axiom.co/api/embed/d6069c02a80fad1ff47998fd94f9104bf9358353.svg "Repobeats analytics image")
+
