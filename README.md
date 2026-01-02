@@ -70,11 +70,14 @@ Minimalistic client for Redis
 ## Requirements
 
 ### Required
+
 - **Bash 4.0+** - Shell interpreter
 - **Homebrew** - Package manager ([install](https://brew.sh))
 
 ### Optional (Recommended)
+
 Choose one for environment management:
+
 - **mise** - Unified tool manager ([install](https://mise.jdx.dev))
 - **uv** - Fast package installer ([install](https://docs.astral.sh/uv/))
 
@@ -108,11 +111,13 @@ brewsearch/
 ### Environment Variables
 
 Create `.env` file from template:
+
 ```bash
 cp .env.example .env
 ```
 
 Configure your API keys:
+
 ```bash
 EXA_API_KEY=your_api_key_here
 ```
@@ -120,6 +125,7 @@ EXA_API_KEY=your_api_key_here
 ### Settings
 
 Edit `config/defaults.conf` to customize:
+
 - Progress bar appearance
 - Output formatting
 - Separator styles
@@ -165,16 +171,19 @@ See [Development Guide](docs/DEVELOPMENT.md) for detailed instructions.
 ### Common Issues
 
 **Script not executable:**
+
 ```bash
 chmod +x bin/brewsearch
 ```
 
 **Homebrew not found:**
+
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 
 **No results found:**
+
 - Check spelling
 - Try partial names (e.g., `bs post` instead of `postgresql`)
 - Update Homebrew: `brew update`
@@ -214,6 +223,7 @@ MIT License - See LICENSE file for details
 macOS ships with Bash 3.2.57. BrewSearch requires Bash 4.0+.
 
 **Quick Fix:**
+
 ```bash
 brew install bash
 export PATH="/opt/homebrew/bin:$PATH"
@@ -238,4 +248,3 @@ theme synthwave
 See [Theme Guide](docs/THEMES.md) for all available themes and customization options.
 
 ![Alt](https://repobeats.axiom.co/api/embed/d6069c02a80fad1ff47998fd94f9104bf9358353.svg "Repobeats analytics image")
-
